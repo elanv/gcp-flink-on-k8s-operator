@@ -65,7 +65,7 @@ metadata:
     app.kubernetes.io/component: webhook-configmap
 data:
   webook.yaml: |-
-    apiVersion: admissionregistration.k8s.io/v1beta1
+    apiVersion: admissionregistration.k8s.io/v1
     kind: MutatingWebhookConfiguration
     metadata:
       creationTimestamp: null
@@ -90,7 +90,7 @@ data:
         resources:
         - flinkclusters
     ---
-    apiVersion: admissionregistration.k8s.io/v1beta1
+    apiVersion: admissionregistration.k8s.io/v1
     kind: ValidatingWebhookConfiguration
     metadata:
       creationTimestamp: null

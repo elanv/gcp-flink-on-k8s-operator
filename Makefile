@@ -128,8 +128,9 @@ deploy: install webhook-cert config/default/manager_image_patch.yaml build-overl
 	$(eval CA_BUNDLE := $(shell kubectl get secrets/webhook-server-cert -n $(FLINK_OPERATOR_NAMESPACE) -o jsonpath="{.data.tls\.crt}"))
 	kubectl kustomize config/deploy \
 			| sed -e "s/$(RESOURCE_PREFIX)system/$(FLINK_OPERATOR_NAMESPACE)/g" \
-			| sed -e "s/Cg==/$(CA_BUNDLE)/g" \
 			| kubectl apply -f -
+	kubectl patch mutatingwebhookconfiguration "$(RESOURCE_PREFIX)mutating-webhook-configuration" --type='json' -p "[{'op': 'add', 'path': '/webhooks/0/clientConfig/caBundle', 'value':'$(CA_BUNDLE)'}]"
+	kubectl patch validatingwebhookconfiguration "$(RESOURCE_PREFIX)validating-webhook-configuration" --type='json' -p "[{'op': 'add', 'path': '/webhooks/0/clientConfig/caBundle', 'value':'$(CA_BUNDLE)'}]"
 ifneq ($(WATCH_NAMESPACE),)
     # Set the label on watch-target namespace to support webhook namespaceSelector.
 	kubectl label ns $(WATCH_NAMESPACE) flink-operator-namespace=$(FLINK_OPERATOR_NAMESPACE)
