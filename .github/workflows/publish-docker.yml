@@ -20,15 +20,17 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v3
-        with:
-          images: ghcr.io/${{ github.repository }}
+      - name: Get tag
+        id: dockerTag
+        run: |
+          echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
       - name: Build and push to GitHub Packages
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          context: .
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+        run: |
+          echo "Build ${REPO}:${TAG}..."
+          IMG="${REPO}:${TAG}" make operator-image \
+            && docker tag "${REPO}:${TAG}" "${REPO}:latest" \
+            && docker push "${REPO}:${TAG}" \
+            && docker push "${REPO}:latest"
+        env:
+          REPO: ghcr.io/${{ github.repository }}
+          TAG: ${{ steps.dockerTag.outputs.tag }}
